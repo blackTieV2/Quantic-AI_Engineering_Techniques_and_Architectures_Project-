@@ -1,0 +1,37 @@
+name: Remove temporary bootstrap workflows
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [reopened, labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'feature/score-5-foundation'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove one-time bootstrap workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/bootstrap-feature.yml
+          rm -f .github/workflows/bootstrap-pr.yml
+          rm -f .github/workflows/cleanup-bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "chore: remove temporary bootstrap workflows"
+          git push origin HEAD:main
