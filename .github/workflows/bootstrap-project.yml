@@ -1,0 +1,39 @@
+name: Expand project bootstrap
+
+on:
+  push:
+    branches: ["feature/score-5-foundation"]
+    paths: [".github/workflows/bootstrap-project.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, 'feat: build Atlas') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct project archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/project.b64.* | base64 --decode > /tmp/project.tar.gz
+          tar -xzf /tmp/project.tar.gz -C .
+          rm -rf .bootstrap
+          rm -f .github/workflows/bootstrap-project.yml
+
+      - name: Commit expanded project
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: build Atlas agentic HR assistant score-5 foundation"
+          git push origin HEAD:feature/score-5-foundation
