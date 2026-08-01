@@ -4,6 +4,9 @@ on:
   push:
     branches: ["feature/score-5-foundation"]
     paths: [".github/workflows/bootstrap-project.yml"]
+  pull_request:
+    branches: ["main"]
+    paths: [".github/workflows/bootstrap-project.yml"]
   workflow_dispatch:
 
 permissions:
@@ -11,13 +14,14 @@ permissions:
 
 jobs:
   expand:
-    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, 'feat: build Atlas') }}
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, 'feat: build Atlas') }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out feature branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: feature/score-5-foundation
 
       - name: Reconstruct project archive
         shell: bash
