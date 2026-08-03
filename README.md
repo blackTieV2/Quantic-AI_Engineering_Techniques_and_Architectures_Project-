@@ -27,7 +27,7 @@ The public version `2.0.0` deployment, genuine MCP connection, two required work
 - benefits lookup and sensitive-case escalation
 - prompt-injection, missing-data, unsupported-question and MCP-failure handling
 - 25-item golden evaluation set
-- deterministic rubric-based metrics for citation relevance, tool selection, workflow behavior and safety
+- deterministic rubric-based metrics for citation relevance, exact tool sequence, workflow behavior and safety
 - retrieval chunk-size ablation
 - CI startup, tests, genuine MCP calls, deep health, evaluation and artifacts
 - reproducible public-deployment smoke test
@@ -131,7 +131,7 @@ docs/                architecture, compliance matrix and demo script
 
 ## Evaluation summary
 
-The checked-in 25-item deterministic rubric run reports 1.000 for its groundedness proxy, citation-prefix accuracy, expected-tool inclusion, workflow completion, clarification/escalation behavior, action safety and status accuracy. Mean keyword coverage is 0.820. These are reproducible rule-based metrics rather than an independent human or LLM-judge assessment. The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/results.md`](evaluation/results.md), [`evaluation/ablation-results.md`](evaluation/ablation-results.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md).
+The strengthened 25-item deterministic rubric run from GitHub Actions run `30798365389` reports 1.000 for groundedness proxy, citation-family accuracy, exact MCP tool-sequence accuracy, workflow completion, clarification/escalation behavior, action safety and status accuracy. Mean keyword coverage is 0.940. Warm latency over 15 representative tasks was p50 2.72 ms and p95 4.59 ms. These are reproducible rule-based proxy metrics, not an independent human or LLM-judge assessment. The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/results.md`](evaluation/results.md), [`evaluation/ablation-results.md`](evaluation/ablation-results.md) and [`ASSIGNMENT-COMPLIANCE-AUDIT.md`](ASSIGNMENT-COMPLIANCE-AUDIT.md).
 
 ## Deployment
 
