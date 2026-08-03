@@ -1,1 +1,2 @@
 Trigger the reproducible deployed Atlas v2 smoke test against Render.
+Retry revision: tolerate transient free-tier 502/503 responses.
