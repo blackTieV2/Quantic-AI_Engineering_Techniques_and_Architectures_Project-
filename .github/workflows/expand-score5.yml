@@ -1,0 +1,42 @@
+name: Expand verified Atlas score-5 project
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/expand-score5.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-score-5-expansion
+  cancel-in-progress: false
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Expand checksum-verified source tree
+        run: python .score5/expand.py
+
+      - name: Commit complete source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "feat: complete Atlas score-5 MCP RAG architecture"
+          git push origin HEAD:main
