@@ -4,18 +4,6 @@ Atlas is a deployed agentic HR assistant for the **Quantic AI Engineering Techni
 
 > Every employee, policy, record and action is fictional. No email, ticket, payroll entry or production HR transaction is created.
 
-## Source materialisation
-
-The complete source tree is stored in five checksum-verified payload files under `.score5/` because the connected repository writer could not atomically upload the expanded tree. The archive SHA-256 is verified before extraction.
-
-From a clean clone, materialise the complete, human-readable project with:
-
-```bash
-python .score5/expand.py
-```
-
-This replaces the bootstrap tree with the complete project. Render performs the same verified step automatically before installing dependencies. The temporary workflow `.github/workflows/expand-score5.yml` can also be run manually once from GitHub Actions to commit the expanded source tree to `main`.
-
 ## Live application
 
 - App: https://atlas-hr-agent.onrender.com/
@@ -24,7 +12,7 @@ This replaces the bootstrap tree with the complete project. Render performs the 
 - API docs: https://atlas-hr-agent.onrender.com/docs
 - Tool registry: https://atlas-hr-agent.onrender.com/api/tools
 
-## Score-5 implementation
+## Score-5 features
 
 - 14-policy corpus in Markdown and HTML, about 10,000 words and 34.5 declared pages
 - heading-aware ingestion and a persistent SQLite vector index
@@ -40,7 +28,7 @@ This replaces the bootstrap tree with the complete project. Render performs the 
 - groundedness, citation, tool, workflow, safety and latency metrics
 - retrieval chunk-size ablation
 - CI startup, tests, genuine MCP calls, deep health, evaluation and artifacts
-- Render free-tier deployment
+- Render deployment only after CI checks pass
 
 ## Demonstration prompts
 
@@ -69,14 +57,13 @@ FastMCP HR tools server
     └── confirmation-gated mock action log
 ```
 
-After materialisation, see `docs/architecture.md` and `design-and-evaluation.md`.
+See [`docs/architecture.md`](docs/architecture.md) and [`design-and-evaluation.md`](design-and-evaluation.md).
 
 ## Local setup
 
 Python 3.11 is recommended.
 
 ```bash
-python .score5/expand.py
 python -m venv .venv
 ```
 
@@ -86,7 +73,6 @@ PowerShell:
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 $env:ATLAS_MCP_TRANSPORT="stdio"
-python scripts/build_index.py --force
 uvicorn app.main:app --reload
 ```
 
@@ -96,40 +82,52 @@ macOS/Linux:
 source .venv/bin/activate
 pip install -r requirements.txt
 export ATLAS_MCP_TRANSPORT=stdio
-python scripts/build_index.py --force
 uvicorn app.main:app --reload
 ```
+
+Open `http://127.0.0.1:8000`.
 
 ## Build and test
 
 ```bash
+python scripts/build_index.py --force
 pytest -q
 python scripts/smoke_mcp.py
 python evaluation/run_evaluation.py --transport inprocess
 python evaluation/run_ablation.py
 ```
 
-`smoke_mcp.py` launches the FastMCP server, discovers tools through the official client and calls both a policy tool and a structured-data tool.
+`smoke_mcp.py` is the protocol-level proof: it launches the FastMCP server, discovers tools through the official client and calls both a policy tool and a structured-data tool.
+
+## Repository structure
+
+```text
+app/                 FastAPI UI and endpoints
+agent/               orchestration, response models and optional LLM provider
+rag/                 multi-format ingestion and SQLite vector index
+mcp_client/          official MCP stdio client gateway
+mcp_server/          FastMCP server and eight tool implementations
+policies/            14 fictional Markdown/HTML policy documents
+mock_data/           synthetic employee, PTO, benefits, office and ticket data
+evaluation/          golden set, scripts, results and ablation
+tests/               application, RAG, evaluation and genuine MCP tests
+docs/                architecture, compliance matrix and demo script
+```
 
 ## Evaluation summary
 
-The checked-in 25-item deterministic run achieved 1.000 for groundedness, citation accuracy, tool-selection accuracy, workflow completion, clarification/escalation accuracy, action safety and status accuracy. Mean keyword coverage was 0.820. The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950.
+The checked-in 25-item deterministic run achieved 1.000 for groundedness, citation accuracy, tool-selection accuracy, workflow completion, clarification/escalation accuracy, action safety and status accuracy. Mean keyword coverage was 0.820. See [`evaluation/results.md`](evaluation/results.md). The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/ablation-results.md`](evaluation/ablation-results.md).
 
 ## Deployment
 
-`render.yaml` materialises the verified source, installs dependencies, builds the SQLite index and starts FastAPI. The first request after inactivity can take 50 seconds or more.
+`render.yaml` defines a free Python service and uses `autoDeployTrigger: checksPass`. Render deploys a new commit only after GitHub Actions succeeds. The first request after inactivity can take 50 seconds or more. The SQLite index is recreated under `/tmp` when a new instance starts.
 
 ## Submission evidence
 
-The materialised project includes:
-
-- `docs/requirements-compliance.md`
-- `design-and-evaluation.md`
-- `ai-tooling.md`
-- `deployed.md`
-- `docs/demo-script.md`
-- `evaluation/`
-- `mcp_client/` and `mcp_server/`
-- `policies/` and `mock_data/`
+- [`docs/requirements-compliance.md`](docs/requirements-compliance.md)
+- [`design-and-evaluation.md`](design-and-evaluation.md)
+- [`ai-tooling.md`](ai-tooling.md)
+- [`deployed.md`](deployed.md)
+- [`docs/demo-script.md`](docs/demo-script.md)
 
 External steps still owned by the student: grant repository access to `quantic-grader` and record the 7–10 minute demonstration.

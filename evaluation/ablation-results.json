@@ -1,0 +1,425 @@
+{
+  "queries": 10,
+  "configurations": [
+    {
+      "name": "compact",
+      "chunk_words": 60,
+      "overlap_words": 10,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "mean_reciprocal_rank": 0.9,
+      "index": {
+        "status": "ready",
+        "path": "<temporary-index>",
+        "documents": 14,
+        "chunks": 212,
+        "estimated_pages": 34.5,
+        "embedding_model": "atlas-hashing-tfidf-v1",
+        "chunk_words": 60,
+        "overlap_words": 10
+      },
+      "queries": [
+        {
+          "query": "international remote work rolling day limit",
+          "expected_prefix": "POL-RW-",
+          "rank": 1,
+          "top_ids": [
+            "POL-RW-01",
+            "POL-FLX-01",
+            "POL-RW-01",
+            "POL-ONB-01",
+            "POL-RW-01"
+          ]
+        },
+        {
+          "query": "corporate VPN multi-factor authentication overseas",
+          "expected_prefix": "POL-SEC-",
+          "rank": 1,
+          "top_ids": [
+            "POL-SEC-01",
+            "POL-SEC-01",
+            "POL-EXP-01",
+            "POL-RW-01",
+            "POL-SEC-01"
+          ]
+        },
+        {
+          "query": "PTO carry over five days",
+          "expected_prefix": "POL-PTO-",
+          "rank": 1,
+          "top_ids": [
+            "POL-PTO-01",
+            "POL-PTO-01",
+            "POL-PTO-01",
+            "POL-EXP-01",
+            "POL-FLX-01"
+          ]
+        },
+        {
+          "query": "benefits qualifying life event enrolment",
+          "expected_prefix": "POL-BEN-",
+          "rank": 1,
+          "top_ids": [
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01"
+          ]
+        },
+        {
+          "query": "harassment confidential HR escalation",
+          "expected_prefix": "POL-CON-",
+          "rank": 2,
+          "top_ids": [
+            "POL-LVE-01",
+            "POL-CON-01",
+            "POL-CON-01",
+            "POL-CON-01",
+            "POL-REC-01"
+          ]
+        },
+        {
+          "query": "expense receipt threshold",
+          "expected_prefix": "POL-EXP-",
+          "rank": 1,
+          "top_ids": [
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01"
+          ]
+        },
+        {
+          "query": "mock ticket does not contact production",
+          "expected_prefix": "POL-SVC-",
+          "rank": 2,
+          "top_ids": [
+            "POL-CON-01",
+            "POL-SVC-01",
+            "POL-EQP-01",
+            "POL-SVC-01",
+            "POL-SVC-01"
+          ]
+        },
+        {
+          "query": "manager approval matrix tax immigration",
+          "expected_prefix": "POL-APR-",
+          "rank": 1,
+          "top_ids": [
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01"
+          ]
+        },
+        {
+          "query": "part-time employment classification",
+          "expected_prefix": "POL-ONB-",
+          "rank": 1,
+          "top_ids": [
+            "POL-ONB-01",
+            "POL-ONB-01",
+            "POL-ONB-01",
+            "POL-APR-01",
+            "POL-BEN-01"
+          ]
+        },
+        {
+          "query": "medical leave documentation privacy",
+          "expected_prefix": "POL-LVE-",
+          "rank": 1,
+          "top_ids": [
+            "POL-LVE-01",
+            "POL-PTO-01",
+            "POL-LVE-01",
+            "POL-PTO-01",
+            "POL-FLX-01"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "balanced",
+      "chunk_words": 120,
+      "overlap_words": 20,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "mean_reciprocal_rank": 0.95,
+      "index": {
+        "status": "ready",
+        "path": "<temporary-index>",
+        "documents": 14,
+        "chunks": 126,
+        "estimated_pages": 34.5,
+        "embedding_model": "atlas-hashing-tfidf-v1",
+        "chunk_words": 120,
+        "overlap_words": 20
+      },
+      "queries": [
+        {
+          "query": "international remote work rolling day limit",
+          "expected_prefix": "POL-RW-",
+          "rank": 1,
+          "top_ids": [
+            "POL-RW-01",
+            "POL-ONB-01",
+            "POL-FLX-01",
+            "POL-RW-01",
+            "POL-APR-01"
+          ]
+        },
+        {
+          "query": "corporate VPN multi-factor authentication overseas",
+          "expected_prefix": "POL-SEC-",
+          "rank": 1,
+          "top_ids": [
+            "POL-SEC-01",
+            "POL-SEC-01",
+            "POL-EXP-01",
+            "POL-SEC-01",
+            "POL-RW-01"
+          ]
+        },
+        {
+          "query": "PTO carry over five days",
+          "expected_prefix": "POL-PTO-",
+          "rank": 1,
+          "top_ids": [
+            "POL-PTO-01",
+            "POL-PTO-01",
+            "POL-PTO-01",
+            "POL-EXP-01",
+            "POL-FLX-01"
+          ]
+        },
+        {
+          "query": "benefits qualifying life event enrolment",
+          "expected_prefix": "POL-BEN-",
+          "rank": 1,
+          "top_ids": [
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01"
+          ]
+        },
+        {
+          "query": "harassment confidential HR escalation",
+          "expected_prefix": "POL-CON-",
+          "rank": 2,
+          "top_ids": [
+            "POL-LVE-01",
+            "POL-CON-01",
+            "POL-CON-01",
+            "POL-SEC-01",
+            "POL-CON-01"
+          ]
+        },
+        {
+          "query": "expense receipt threshold",
+          "expected_prefix": "POL-EXP-",
+          "rank": 1,
+          "top_ids": [
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-BEN-01"
+          ]
+        },
+        {
+          "query": "mock ticket does not contact production",
+          "expected_prefix": "POL-SVC-",
+          "rank": 1,
+          "top_ids": [
+            "POL-SVC-01",
+            "POL-EQP-01",
+            "POL-CON-01",
+            "POL-SVC-01",
+            "POL-SVC-01"
+          ]
+        },
+        {
+          "query": "manager approval matrix tax immigration",
+          "expected_prefix": "POL-APR-",
+          "rank": 1,
+          "top_ids": [
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-RW-01"
+          ]
+        },
+        {
+          "query": "part-time employment classification",
+          "expected_prefix": "POL-ONB-",
+          "rank": 1,
+          "top_ids": [
+            "POL-ONB-01",
+            "POL-ONB-01",
+            "POL-APR-01",
+            "POL-BEN-01",
+            "POL-CON-01"
+          ]
+        },
+        {
+          "query": "medical leave documentation privacy",
+          "expected_prefix": "POL-LVE-",
+          "rank": 1,
+          "top_ids": [
+            "POL-LVE-01",
+            "POL-LVE-01",
+            "POL-PTO-01",
+            "POL-LVE-01",
+            "POL-PTO-01"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "broad",
+      "chunk_words": 220,
+      "overlap_words": 30,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "mean_reciprocal_rank": 0.95,
+      "index": {
+        "status": "ready",
+        "path": "<temporary-index>",
+        "documents": 14,
+        "chunks": 126,
+        "estimated_pages": 34.5,
+        "embedding_model": "atlas-hashing-tfidf-v1",
+        "chunk_words": 220,
+        "overlap_words": 30
+      },
+      "queries": [
+        {
+          "query": "international remote work rolling day limit",
+          "expected_prefix": "POL-RW-",
+          "rank": 1,
+          "top_ids": [
+            "POL-RW-01",
+            "POL-ONB-01",
+            "POL-FLX-01",
+            "POL-RW-01",
+            "POL-APR-01"
+          ]
+        },
+        {
+          "query": "corporate VPN multi-factor authentication overseas",
+          "expected_prefix": "POL-SEC-",
+          "rank": 1,
+          "top_ids": [
+            "POL-SEC-01",
+            "POL-SEC-01",
+            "POL-EXP-01",
+            "POL-SEC-01",
+            "POL-RW-01"
+          ]
+        },
+        {
+          "query": "PTO carry over five days",
+          "expected_prefix": "POL-PTO-",
+          "rank": 1,
+          "top_ids": [
+            "POL-PTO-01",
+            "POL-PTO-01",
+            "POL-PTO-01",
+            "POL-EXP-01",
+            "POL-FLX-01"
+          ]
+        },
+        {
+          "query": "benefits qualifying life event enrolment",
+          "expected_prefix": "POL-BEN-",
+          "rank": 1,
+          "top_ids": [
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01",
+            "POL-BEN-01"
+          ]
+        },
+        {
+          "query": "harassment confidential HR escalation",
+          "expected_prefix": "POL-CON-",
+          "rank": 2,
+          "top_ids": [
+            "POL-LVE-01",
+            "POL-CON-01",
+            "POL-CON-01",
+            "POL-SEC-01",
+            "POL-CON-01"
+          ]
+        },
+        {
+          "query": "expense receipt threshold",
+          "expected_prefix": "POL-EXP-",
+          "rank": 1,
+          "top_ids": [
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-EXP-01",
+            "POL-BEN-01"
+          ]
+        },
+        {
+          "query": "mock ticket does not contact production",
+          "expected_prefix": "POL-SVC-",
+          "rank": 1,
+          "top_ids": [
+            "POL-SVC-01",
+            "POL-EQP-01",
+            "POL-CON-01",
+            "POL-SVC-01",
+            "POL-SVC-01"
+          ]
+        },
+        {
+          "query": "manager approval matrix tax immigration",
+          "expected_prefix": "POL-APR-",
+          "rank": 1,
+          "top_ids": [
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-APR-01",
+            "POL-RW-01"
+          ]
+        },
+        {
+          "query": "part-time employment classification",
+          "expected_prefix": "POL-ONB-",
+          "rank": 1,
+          "top_ids": [
+            "POL-ONB-01",
+            "POL-ONB-01",
+            "POL-APR-01",
+            "POL-BEN-01",
+            "POL-CON-01"
+          ]
+        },
+        {
+          "query": "medical leave documentation privacy",
+          "expected_prefix": "POL-LVE-",
+          "rank": 1,
+          "top_ids": [
+            "POL-LVE-01",
+            "POL-LVE-01",
+            "POL-PTO-01",
+            "POL-LVE-01",
+            "POL-PTO-01"
+          ]
+        }
+      ]
+    }
+  ]
+}
