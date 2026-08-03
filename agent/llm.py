@@ -5,19 +5,24 @@ from typing import Any, Protocol
 
 import httpx
 
+EvidenceItem = dict[str, Any] | str
+
 
 class AnswerProvider(Protocol):
-    async def refine(self, draft: str, evidence: list[dict[str, Any]]) -> str: ...
+    async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str: ...
 
 
-def build_grounding_prompt(draft: str, evidence: list[dict[str, Any]]) -> str:
-    """Build a metadata-rich prompt from citation-ready RAG chunks.
+def build_grounding_prompt(draft: str, evidence: list[EvidenceItem]) -> str:
+    """Build a grounding prompt from citation-ready chunks or legacy snippets.
 
-    The model is asked only to refine an already controlled draft. Tool choice,
-    action confirmation and safety decisions remain outside the model.
+    Metadata-bearing dictionaries are preferred. String support is retained so
+    deterministic and existing orchestration paths remain backward compatible.
     """
     records: list[str] = []
     for index, item in enumerate(evidence, start=1):
+        if isinstance(item, str):
+            records.append(f"Source {index}\nSnippet: {item}")
+            continue
         records.append(
             "\n".join(
                 [
@@ -37,12 +42,12 @@ def build_grounding_prompt(draft: str, evidence: list[dict[str, Any]]) -> str:
         "in the draft. Preserve uncertainty, policy distinctions and all no-action disclaimers. Do not add new facts. "
         "Do not remove or invent source references.\n\n"
         f"Controlled draft:\n{draft}\n\n"
-        f"Retrieved evidence with citation metadata:\n{evidence_text}"
+        f"Retrieved evidence with citation metadata where available:\n{evidence_text}"
     )
 
 
 class DeterministicProvider:
-    async def refine(self, draft: str, evidence: list[dict[str, Any]]) -> str:
+    async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str:
         return draft
 
 
@@ -54,7 +59,7 @@ class OpenAICompatibleProvider:
         self.api_key = os.environ["ATLAS_LLM_API_KEY"]
         self.model = os.getenv("ATLAS_LLM_MODEL", "gpt-4.1-mini")
 
-    async def refine(self, draft: str, evidence: list[dict[str, Any]]) -> str:
+    async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str:
         prompt = build_grounding_prompt(draft, evidence)
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
