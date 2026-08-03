@@ -4,11 +4,12 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from app.engine import EMPLOYEES, POLICIES, TOOLS, respond
+from app.engine import EMPLOYEES, POLICIES, TOOLS
+from app.request_controls import controlled_respond
 
 app = FastAPI(
     title="Atlas HR Agent",
-    version="1.0.0",
+    version="1.0.1",
     description="A synthetic, citation-grounded HR assistant built for the Quantic AI Engineering project.",
 )
 
@@ -55,7 +56,7 @@ def tools() -> dict:
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> dict:
-    return respond(request.message, request.confirm_action).as_dict()
+    return controlled_respond(request.message, request.confirm_action).as_dict()
 
 
 @app.get("/", response_class=HTMLResponse)
