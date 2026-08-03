@@ -1,17 +1,53 @@
 from __future__ import annotations
 
 import os
-from typing import Protocol
+from typing import Any, Protocol
 
 import httpx
 
+EvidenceItem = dict[str, Any] | str
+
 
 class AnswerProvider(Protocol):
-    async def refine(self, draft: str, evidence: list[str]) -> str: ...
+    async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str: ...
+
+
+def build_grounding_prompt(draft: str, evidence: list[EvidenceItem]) -> str:
+    """Build a grounding prompt from citation-ready chunks or legacy snippets.
+
+    Metadata-bearing dictionaries are preferred. String support is retained so
+    deterministic and existing orchestration paths remain backward compatible.
+    """
+    records: list[str] = []
+    for index, item in enumerate(evidence, start=1):
+        if isinstance(item, str):
+            records.append(f"Source {index}\nSnippet: {item}")
+            continue
+        records.append(
+            "\n".join(
+                [
+                    f"Source {index}",
+                    f"Document ID: {item.get('document_id', '')}",
+                    f"Title: {item.get('title', '')}",
+                    f"Section: {item.get('section', '')}",
+                    f"Source path: {item.get('source_path', '')}",
+                    f"Chunk ID: {item.get('chunk_id', '')}",
+                    f"Snippet: {item.get('snippet', '')}",
+                ]
+            )
+        )
+    evidence_text = "\n\n".join(records) or "No policy evidence was supplied."
+    return (
+        "Rewrite the controlled draft for clarity using only the supplied evidence and structured facts already present "
+        "in the draft. Preserve uncertainty, policy distinctions and all no-action disclaimers. Do not add new facts. "
+        "Do not remove or invent source references.\n\n"
+        f"Controlled draft:\n{draft}\n\n"
+        f"Retrieved evidence with citation metadata where available:\n{evidence_text}"
+    )
 
 
 class DeterministicProvider:
-    async def refine(self, draft: str, evidence: list[str]) -> str:
+    async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str:
         return draft
 
 
@@ -23,11 +59,8 @@ class OpenAICompatibleProvider:
         self.api_key = os.environ["ATLAS_LLM_API_KEY"]
         self.model = os.getenv("ATLAS_LLM_MODEL", "gpt-4.1-mini")
 
-    async def refine(self, draft: str, evidence: list[str]) -> str:
-        prompt = (
-            "Rewrite the draft for clarity using only the supplied evidence. Preserve uncertainty and citations.\n\n"
-            f"Draft:\n{draft}\n\nEvidence:\n" + "\n".join(evidence)
-        )
+    async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str:
+        prompt = build_grounding_prompt(draft, evidence)
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
                 f"{self.base_url}/chat/completions",
@@ -35,7 +68,16 @@ class OpenAICompatibleProvider:
                 json={
                     "model": self.model,
                     "temperature": 0,
-                    "messages": [{"role": "user", "content": prompt}],
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a constrained answer-refinement component. Follow the supplied policy evidence only. "
+                                "You do not choose tools, approve actions or override safety controls."
+                            ),
+                        },
+                        {"role": "user", "content": prompt},
+                    ],
                 },
             )
             response.raise_for_status()
