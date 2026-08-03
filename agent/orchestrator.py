@@ -196,7 +196,7 @@ class AtlasOrchestrator:
                     else:
                         answer = "The request is not currently eligible because " + "; ".join(check["reasons"]) + "."
                         status = "not_eligible"
-                    answer = await self.provider.refine(answer, _snippets(citations))
+                    answer = await self.provider.refine(answer, citations)
                     return AgentResult(
                         answer=answer,
                         citations=citations,
@@ -243,6 +243,8 @@ class AtlasOrchestrator:
                         f"The request is for {requested_days} day(s), leaving {pto['remaining_if_approved']} if approved. "
                         f"The policy notice expectation is {check['notice_days']} calendar days, and manager approval remains required."
                     )
+                    if not check["eligible"]:
+                        base += " The request is not eligible because " + "; ".join(check["reasons"]) + "."
                     asks_action = any(term in lowered for term in ("draft", "email", "submit"))
                     if asks_action and not confirm_action:
                         return AgentResult(
@@ -375,8 +377,11 @@ class AtlasOrchestrator:
     ) -> AgentResult:
         error = result.get("error") or {"code": "tool_error", "message": "Unknown tool error"}
         status = "not_found" if str(error.get("code", "")).endswith("not_found") else "tool_error"
+        message = str(error.get("message", "The requested tool operation failed."))
+        if status == "not_found" and "not found" not in message.lower():
+            message = "Record not found: " + message
         return AgentResult(
-            answer=str(error.get("message", "The requested tool operation failed.")),
+            answer=message,
             citations=citations or [],
             supporting_snippets=_snippets(citations or []),
             trace=trace,
