@@ -12,13 +12,13 @@ Atlas is a deployed agentic HR assistant for the **Quantic AI Engineering Techni
 - API docs: https://atlas-hr-agent.onrender.com/docs
 - Tool registry: https://atlas-hr-agent.onrender.com/api/tools
 
-The public version `2.0.0` deployment, genuine MCP connection, two required workflows and prompt-injection guardrail were independently verified from GitHub Actions. See [`deployed.md`](deployed.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md).
+The public version `2.0.0` deployment, genuine MCP connection, two required workflows and prompt-injection guardrail were independently exercised from GitHub Actions. See [`deployed.md`](deployed.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md). Those records are technical verification evidence, not an official Quantic grade.
 
-## Score-5 features
+## Implemented features
 
-- 14-policy corpus in Markdown and HTML, about 10,000 words and 34.5 declared pages
+- 14-policy corpus in Markdown and HTML, about 10,000 words and 34.5 estimated pages
 - heading-aware ingestion and a persistent SQLite vector index
-- deterministic 384-dimensional hashing TF-IDF embeddings
+- deterministic 384-dimensional hashing TF-IDF vector representation
 - official MCP Python client and FastMCP server over stdio
 - eight discoverable typed tools with structured errors
 - visible tool names, arguments and concise results
@@ -27,7 +27,7 @@ The public version `2.0.0` deployment, genuine MCP connection, two required work
 - benefits lookup and sensitive-case escalation
 - prompt-injection, missing-data, unsupported-question and MCP-failure handling
 - 25-item golden evaluation set
-- groundedness, citation, tool, workflow, safety and latency metrics
+- deterministic rubric-based metrics for citation relevance, tool selection, workflow behavior and safety
 - retrieval chunk-size ablation
 - CI startup, tests, genuine MCP calls, deep health, evaluation and artifacts
 - reproducible public-deployment smoke test
@@ -60,7 +60,7 @@ FastMCP HR tools server
     └── confirmation-gated mock action log
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) and [`design-and-evaluation.md`](design-and-evaluation.md).
+See [`docs/architecture.md`](docs/architecture.md), [`design-and-evaluation.md`](design-and-evaluation.md) and [`ASSIGNMENT-COMPLIANCE-AUDIT.md`](ASSIGNMENT-COMPLIANCE-AUDIT.md).
 
 ## Local setup
 
@@ -89,6 +89,18 @@ uvicorn app.main:app --reload
 ```
 
 Open `http://127.0.0.1:8000`.
+
+## Optional LLM refinement
+
+The repository includes an OpenAI-compatible answer-refinement provider. Set the following environment variables to activate it:
+
+```text
+ATLAS_LLM_BASE_URL
+ATLAS_LLM_API_KEY
+ATLAS_LLM_MODEL
+```
+
+Without those variables, Atlas runs in deterministic synthesis mode. The assignment-alignment audit records this distinction because the course brief explicitly asks for a working LLM-based system.
 
 ## Build and test
 
@@ -119,7 +131,7 @@ docs/                architecture, compliance matrix and demo script
 
 ## Evaluation summary
 
-The verified 25-item deterministic run achieved 1.000 for groundedness, citation accuracy, tool-selection accuracy, workflow completion, clarification/escalation accuracy, action safety and status accuracy. Mean keyword coverage was 0.820; warm p50/p95 latency was 2.73/4.69 ms. The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/results.md`](evaluation/results.md), [`evaluation/ablation-results.md`](evaluation/ablation-results.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md).
+The checked-in 25-item deterministic rubric run reports 1.000 for its groundedness proxy, citation-prefix accuracy, expected-tool inclusion, workflow completion, clarification/escalation behavior, action safety and status accuracy. Mean keyword coverage is 0.820. These are reproducible rule-based metrics rather than an independent human or LLM-judge assessment. The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/results.md`](evaluation/results.md), [`evaluation/ablation-results.md`](evaluation/ablation-results.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md).
 
 ## Deployment
 
@@ -133,5 +145,6 @@ The verified 25-item deterministic run achieved 1.000 for groundedness, citation
 - [`deployed.md`](deployed.md)
 - [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md)
 - [`docs/demo-script.md`](docs/demo-script.md)
+- [`ASSIGNMENT-COMPLIANCE-AUDIT.md`](ASSIGNMENT-COMPLIANCE-AUDIT.md)
 
-Repository access for `quantic-grader` was verified as `read` on 3 August 2026. The only external submission step that cannot be completed within the repository is recording the required 7–10 minute screen-share demonstration.
+The student reports that `quantic-grader` has now been added to the repository. Before submission, verify in **Settings → Collaborators** that the invitation is visible or accepted; a generic `read` permission response for a public repository is not sufficient evidence of explicit sharing. The required 7–10 minute screen-share demonstration must also be recorded and submitted by the student.
