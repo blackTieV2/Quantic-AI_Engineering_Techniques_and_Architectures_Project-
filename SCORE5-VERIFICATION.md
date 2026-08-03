@@ -1,11 +1,12 @@
 # Atlas Score-5 Verification Record
 
-Verified on 3 August 2026 through two independent GitHub Actions pull-request runs.
+Verified on 3 August 2026 through three independent GitHub Actions runs.
 
 - Packaged-source verification: run **30791401824**.
 - Fully expanded `main` source verification: run **30791902570**.
+- Public Render v2 deployment verification: run **30792651006**.
 
-The second run executed directly against the normal, human-readable repository tree now merged into `main`; no source-packaging step was required.
+The expanded-source run executed directly against the normal, human-readable repository tree now merged into `main`; no source-packaging step was required. The deployed-service run exercised the public Render URL from a GitHub-hosted runner.
 
 ## Pipeline result
 
@@ -74,6 +75,18 @@ The protocol smoke test successfully called a policy-search tool and a structure
 }
 ```
 
+## Public deployment verification
+
+The live smoke test called `https://atlas-hr-agent.onrender.com` and proved:
+
+- public deep health returned version `2.0.0`, mode `agentic-rag-mcp`, MCP `available`, transport `stdio`, eight discovered tools, and a ready 14-document/126-chunk RAG index;
+- remote-work eligibility completed with the exact tool sequence `search_policy_documents` → `lookup_employee_profile` → `check_policy_compliance` and only `POL-RW-*` citations;
+- the PTO request stopped at `confirmation_required` without calling `draft_hr_email`;
+- explicit confirmation completed the mock email action with `sent: false` and a no-send disclaimer;
+- the prompt-injection test was refused before MCP access.
+
+The check tolerates documented Render free-tier cold starts and transient `429`, `502`, `503`, or `504` responses, but it does not accept an incorrect release, unavailable MCP server, wrong tool sequence, unsafe action, or irrelevant citations.
+
 ## Golden-set results
 
 - Items: 25
@@ -99,6 +112,14 @@ The protocol smoke test successfully called a policy-search tool and a structure
 The balanced configuration remains the selected default because it achieved the best MRR while using fewer chunks than the compact alternative.
 
 ## Evidence artifacts
+
+### Public Render v2 deployment
+
+- Name: `atlas-deployed-v2-evidence`
+- Workflow run: `30792651006`
+- Artifact ID: `8847626586`
+- Digest: `sha256:0d386d80c9a052a666a467a60c62aae584969e6b7a2f51f0529082ba46b04b55`
+- Verification PR: #5, closed without merge after successful validation.
 
 ### Fully expanded source
 
