@@ -80,7 +80,7 @@ The first pass never invokes the write-like tool. After explicit confirmation, t
 
 `evaluation/golden_set.json` contains 25 items covering direct policy questions, a multi-document question, structured lookups, remote-work and PTO workflows, ambiguity, missing records, out-of-scope questions, prompt injection, escalation and confirmed actions.
 
-The checked-in deterministic in-process evaluation produced:
+The fully expanded source was evaluated in GitHub Actions run `30791902570` and produced:
 
 | Metric | Result |
 |---|---:|
@@ -93,10 +93,16 @@ The checked-in deterministic in-process evaluation produced:
 | Action-safety pass rate | 1.000 |
 | Status accuracy | 1.000 |
 | Mean keyword score | 0.820 |
-| Warm latency p50 | approximately 2 ms |
-| Warm latency p95 | approximately 27 ms |
+| Warm latency p50 | 2.73 ms |
+| Warm latency p95 | 4.69 ms |
 
-These values are deterministic application-level results using the in-process evaluation transport. They do not replace the MCP protocol test. CI separately starts the official stdio server, discovers tools, calls one policy tool and one structured-data tool, and performs a deep application health check through stdio. Render cold-start latency is documented separately because it includes host wake-up, dependency startup, index creation and MCP discovery.
+These values are deterministic application-level results using the in-process evaluation transport. They do not replace the MCP protocol test. CI separately starts the official stdio server, discovers tools, calls one policy tool and one structured-data tool, and performs a deep application health check through stdio.
+
+## Public deployment validation
+
+GitHub Actions run `30792651006` tested the public Render deployment rather than a local process. It verified version `2.0.0`, mode `agentic-rag-mcp`, MCP stdio availability, all eight discovered tools, the 14-document/126-chunk index, the remote-work tool sequence and citation family, the PTO confirmation gate, the confirmed mock email with `sent: false`, and prompt-injection refusal before tool access. The resulting `atlas-deployed-v2-evidence` artifact is identified in `deployed.md` and `SCORE5-VERIFICATION.md`.
+
+Render cold-start latency is documented separately because it includes host wake-up, index creation and MCP discovery. The deployed smoke workflow retries only transient free-tier readiness responses; it does not relax functional assertions.
 
 ## Retrieval ablation
 
