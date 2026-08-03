@@ -1,0 +1,59 @@
+name: Expand committed project archive
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/expand-project.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: expand-committed-project
+  cancel-in-progress: false
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reconstruct and validate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d .bootstrap
+          test -n "$(find .bootstrap -maxdepth 1 -name 'project.b64.*' -print -quit)"
+          cat .bootstrap/project.b64.* | base64 --decode > /tmp/project.tar.gz
+          gzip -t /tmp/project.tar.gz
+          tar -tzf /tmp/project.tar.gz > /tmp/project-files.txt
+          test -s /tmp/project-files.txt
+
+      - name: Expand project source
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xzf /tmp/project.tar.gz -C . \
+            --exclude='.github/workflows' \
+            --exclude='.github/workflows/*'
+          rm -rf .bootstrap
+
+      - name: Commit expanded source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "feat: expand Atlas project source"
+          git push origin HEAD:main
