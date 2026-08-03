@@ -4,35 +4,26 @@
 
 - Application: https://atlas-hr-agent.onrender.com/
 - Health: https://atlas-hr-agent.onrender.com/health
+- Deep health and MCP rediscovery: https://atlas-hr-agent.onrender.com/health?deep=true
 - OpenAPI documentation: https://atlas-hr-agent.onrender.com/docs
-- Tool registry: https://atlas-hr-agent.onrender.com/api/tools
+- MCP tool registry: https://atlas-hr-agent.onrender.com/api/tools
 
-## Verification status
+## Deployment architecture
 
-Verified live on 3 August 2026.
+The Render Blueprint deploys `main` as one Python web service. FastAPI, the agent orchestrator, the official MCP stdio client/server, the synthetic JSON records and the local SQLite vector index run within the service. Render is configured with `autoDeployTrigger: checksPass`, so new commits deploy only after GitHub Actions passes.
 
-The Render service is deployed from the `main` branch using the repository-root `render.yaml` Blueprint.
+The current score-5 release is version `2.0.0`. Its health response reports:
 
-Observed health response:
+- application status;
+- genuine MCP transport and discovered tool names;
+- RAG index document, chunk and page counts;
+- embedding model and chunk configuration;
+- deterministic or optional LLM provider mode.
 
-```json
-{
-  "status": "ok",
-  "service": "atlas-hr-agent",
-  "version": "1.0.0",
-  "policy_documents": 7,
-  "synthetic_employee_records": 3,
-  "registered_tools": 8,
-  "mode": "deterministic-demonstration"
-}
-```
+## Free-tier cold start
 
-The root browser interface loaded successfully, Render reported the deployment as live, `/health` returned status `ok`, and `/docs` exposed the FastAPI OpenAPI interface.
+The free instance may spin down after inactivity. The first request can take approximately 50 seconds or more. On a new instance, Atlas rebuilds the SQLite retrieval index under `/tmp` and performs an MCP discovery check. Warm requests are substantially faster. A failed new deployment does not replace the last healthy Render instance.
 
-## Hosting note
+## Storage and actions
 
-The service uses Render's free instance plan. A sleeping instance may take approximately 50 seconds or more to respond to the first request after inactivity.
-
-## Scope boundary
-
-This deployment verifies the working baseline. It currently provides deterministic policy retrieval, structured synthetic employee lookups, controlled HR workflows, citations, escalation and confirmation before mock actions. Formal MCP transport, a larger multi-format corpus, persistent vector storage and extended evaluation remain future increments.
+The vector index and mock-action log are ephemeral local files. They contain only synthetic information. The email and ticket tools never contact external systems; they create fictional local records only after explicit confirmation.

@@ -4,10 +4,14 @@ services:
     runtime: python
     plan: free
     branch: main
-    buildCommand: python .score5/expand.py && pip install -r requirements.txt && python scripts/build_index.py
+    buildCommand: pip install -r requirements.txt && python -m compileall app agent rag mcp_server mcp_client evaluation scripts
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
-    autoDeploy: true
+    autoDeployTrigger: checksPass
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: ATLAS_MCP_TRANSPORT
+        value: stdio
+      - key: ATLAS_INDEX_PATH
+        value: /tmp/atlas-rag/rag_index.sqlite3
