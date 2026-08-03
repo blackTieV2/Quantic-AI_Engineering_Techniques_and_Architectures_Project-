@@ -18,7 +18,7 @@ The recorded video is also outstanding, and explicit `quantic-grader` invitation
 | Area | Requirement | Evidence reviewed | Finding |
 |---|---|---|---|
 | Project overview | Agentic HR system with RAG, MCP, mock data and grounded responses | `app/`, `agent/`, `rag/`, `mcp_client/`, `mcp_server/`, `mock_data/` | PASS for functional architecture |
-| Learning outcome | Working LLM-based agentic system | `agent/llm.py`, `/health` behavior, `render.yaml` | PARTIAL: provider code exists, but current deployment reports deterministic mode |
+| Learning outcome | Working LLM-based agentic system | `agent/llm.py`, `/health` behavior, `render.yaml` | PARTIAL: provider code and metadata-rich prompt exist, but current deployment reports deterministic mode |
 | Environment | Virtual environment instructions | `README.md` | PASS |
 | Environment | Dependency manifest | `requirements.txt` | PASS; MCP dependency is range-pinned rather than exact |
 | Environment | Setup, local run, deployment and evaluation instructions | `README.md`, `deployed.md` | PASS |
@@ -33,20 +33,20 @@ The recorded video is also outstanding, and explicit `quantic-grader` invitation
 | Vector store | Lightweight local vector database | SQLite vector index | PASS; SQLite is explicitly acceptable in the recommended architecture |
 | Metadata | Document ID/title/section/snippet | stored and returned by RAG | PASS |
 | RAG | Top-k retrieval and optional filtering | `rag/index.py`, document-prefix filters | PASS |
-| RAG | Prompt retrieved chunks and source metadata into LLM context | `agent/llm.py` | PARTIAL: optional prompt uses snippets; active provider is not configured and full metadata is not injected |
+| RAG | Prompt retrieved chunks and source metadata into LLM context | `agent/llm.py`, `tests/test_llm.py` | PARTIAL: full citation metadata prompt is implemented and tested, but the active provider is not configured in Render |
 | RAG | Cited answers and supporting snippets | `/chat`, UI citation cards | PASS |
 | RAG | Guardrails and unsupported-question handling | injection refusal and `insufficient_evidence` | PASS |
-| RAG | Multi-document question | international/confidential-data path retrieves `POL-RW-*` and `POL-SEC-*` | PASS functionally; evaluation prefix coverage check should be strengthened |
+| RAG | Multi-document question | international/confidential-data path retrieves `POL-RW-*` and `POL-SEC-*` | PASS; evaluation requires both families and two exact search calls |
 | Agent | Interpret intent, decide RAG/tool path, select and call tools | `agent/orchestrator.py` | PASS through explicit deterministic routing |
 | Agent | Two multi-step workflows | remote work and PTO/email | PASS and live-tested |
 | Agent | Concise operational trace | discovery and tool-call trace | PASS |
-| Agent | Graceful failures | missing records, ambiguous requests, MCP failure, insufficient evidence | PASS |
+| Agent | Graceful failures | missing records, ambiguous requests, MCP failure, insufficient evidence | PASS; missing profiles now stop downstream calls and return a clear `not_found` answer |
 | Agent | Confirmation before mock actions | email and ticket require `confirmed=true` | PASS |
 | MCP | MCP-compatible server and transport | FastMCP stdio server | PASS |
 | MCP | At least five tools | eight tools | PASS |
 | MCP | RAG tool and structured/mock tool | policy search, employee/PTO/benefits, email/ticket | PASS |
 | MCP | Agent actually calls MCP-exposed tools | official stdio client and public smoke test | PASS |
-| MCP docs | Architecture, transport, schemas and discovery | design docs and code | PASS after explicit schema table was added in the audit revision |
+| MCP docs | Architecture, transport, schemas and discovery | design docs and code | PASS; explicit schema table included |
 | Web | Chat interface | deployed FastAPI UI | PASS |
 | Web | `/chat` answer/citations/snippets/trace | `app/main.py` | PASS |
 | Web | `/health` app and MCP status | `/health?deep=true` | PASS |
@@ -60,31 +60,49 @@ The recorded video is also outstanding, and explicit `quantic-grader` invitation
 | CI/CD | Deploy only if tests pass | Render `autoDeployTrigger: checksPass` | PASS |
 | Evaluation | 20–30 questions/tasks | 25 items | PASS |
 | Evaluation | Straightforward, multi-doc, tool, ambiguous and OOS cases | `evaluation/golden_set.json` | PASS |
-| Evaluation | Correct/gold answers or rubrics | expected statuses, tools, citation prefixes and gold keywords | PASS as a rubric; full prose gold answers would strengthen evidence |
-| Evaluation | Groundedness and citation metrics | rule-based proxies | PARTIAL QUALITY: reproducible but not semantic entailment or independent judging |
-| Evaluation | Tool/workflow/escalation/action-safety metrics | evaluation script | PASS as deterministic regression metrics |
-| Evaluation | p50/p95 latency for representative tasks | warm evaluation p50/p95 over all 25 items | MOSTLY PASS; a designated 10–20 task latency subset would align more literally |
+| Evaluation | Correct/gold answers or rubrics | expected statuses, exact tool sequences, citation prefixes and gold keywords | PASS as a rubric; full prose gold answers would strengthen manual review |
+| Evaluation | Groundedness and citation metrics | strengthened rule-based proxies | PARTIAL QUALITY: reproducible and stricter, but not semantic entailment or independent judging |
+| Evaluation | Tool/workflow/escalation/action-safety metrics | evaluation script | PASS; exact tool sequence is required |
+| Evaluation | p50/p95 latency for representative tasks | designated 15-task warm sample | PASS |
 | Evaluation | Cold versus warm behavior | warm metrics plus cold-start note | PASS at minimum; no controlled cold-start benchmark |
 | Evaluation | Ablation/comparison | three chunk configurations | PASS |
-| Design docs | Design choices and architecture | `design-and-evaluation.md`, `docs/architecture.md` | PASS after audit revision |
+| Design docs | Design choices and architecture | `design-and-evaluation.md`, `docs/architecture.md` | PASS |
 | Design docs | Two workflows and expected MCP calls | design and demo script | PASS |
-| AI tooling | Tools used, how, what worked and what did not | `ai-tooling.md` | PASS after audit revision |
+| AI tooling | Tools used, how, what worked and what did not | `ai-tooling.md` | PASS |
 | Submission | README, design, AI tooling, deployed, evaluation, mock data and MCP code | repository | PASS |
 | Submission | Share with `quantic-grader` | student reports account added | EXTERNAL CHECK: verify invitation visible or accepted in Settings |
 | Submission | 7–10 minute screen-share, camera, government ID and two tasks | script only | PENDING EXTERNAL ACTION |
+
+## Corrective verification completed
+
+GitHub Actions run `30798365389` passed dependency installation, compilation, index build, 14 tests, genuine MCP discovery and calls, application startup/deep health, the strengthened 25-item evaluation, retrieval ablation and artifact upload.
+
+The strengthened evaluation reports:
+
+- groundedness proxy: 1.000;
+- citation-family accuracy: 1.000;
+- exact MCP tool-sequence accuracy: 1.000;
+- workflow completion: 1.000;
+- clarification/escalation accuracy: 1.000;
+- action-safety pass rate: 1.000;
+- status accuracy: 1.000;
+- mean keyword score: 0.940;
+- warm latency over 15 representative tasks: p50 2.72 ms, p95 4.59 ms.
+
+These are deterministic regression proxies, not independent expert or LLM-judge scores.
 
 ## Material risks before submission
 
 ### 1. Active LLM requirement
 
-The brief says the project should implement a **working LLM-based agentic system** and a prompting strategy that injects retrieved chunks and metadata into the LLM context. The current Render release reports `llm_provider: deterministic` unless external provider variables are configured. The optional refinement code is not equivalent to proving active LLM use in the deployed application.
+The brief asks for a **working LLM-based agentic system** and a prompting strategy that injects retrieved chunks and metadata into the LLM context. The metadata-rich prompt and provider adapter are now implemented and tested, but the current Render release reports `llm_provider: deterministic` unless external provider variables are configured. The optional code is not equivalent to proving active LLM use in the deployed application.
 
 Recommended closure:
 
 - configure a free-tier OpenAI-compatible provider in Render;
-- format evidence with document ID, title, section and snippet in the model prompt;
-- add a CI test using a mocked provider and a live demo showing the configured provider mode;
-- retain deterministic safety and tool-selection controls around the model.
+- confirm `/health` reports the configured provider mode;
+- run and record both workflows with the provider active;
+- retain deterministic safety, tool selection and confirmation controls around the model.
 
 ### 2. Embedding-model interpretation
 
@@ -97,7 +115,7 @@ Recommended closure:
 
 ### 3. Evaluation claims
 
-The 1.000 figures are deterministic regression proxies. They should not be described as independent expert scores. The multi-document citation check and exact tool-sequence validation should be strengthened before calling the evaluation “outstanding.”
+The evaluation now requires exact tool sequences and all expected citation families. Its 1.000 values should still be described as deterministic rubric-based proxies rather than independent semantic or expert grading.
 
 ### 4. Submission actions
 
