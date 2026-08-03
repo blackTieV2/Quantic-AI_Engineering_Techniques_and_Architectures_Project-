@@ -4,10 +4,10 @@ services:
     runtime: python
     plan: free
     branch: main
-    buildCommand: pip install -r requirements.txt
+    buildCommand: python .score5/expand.py && pip install -r requirements.txt && python scripts/build_index.py
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
-    autoDeployTrigger: checksPass
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
