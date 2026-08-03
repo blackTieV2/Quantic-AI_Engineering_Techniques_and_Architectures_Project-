@@ -1,12 +1,9 @@
-name: Expand verified Atlas score-5 project
+name: Expand verified Atlas score-5 source
 
 on:
-  push:
+  pull_request:
     branches: [main]
-    paths:
-      - ".score5/**"
-      - ".github/workflows/expand-score5.yml"
-  workflow_dispatch:
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
@@ -17,18 +14,19 @@ concurrency:
 
 jobs:
   expand:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/score5-expanded'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out main
+      - name: Check out controlled expansion branch
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: feature/score5-expanded
           fetch-depth: 0
 
       - name: Expand checksum-verified source tree
         run: python .score5/expand.py
 
-      - name: Commit complete source tree
+      - name: Commit complete source tree to pull-request branch
         shell: bash
         run: |
           set -euo pipefail
@@ -40,4 +38,4 @@ jobs:
             exit 0
           fi
           git commit -m "feat: complete Atlas score-5 MCP RAG architecture"
-          git push origin HEAD:main
+          git push origin HEAD:feature/score5-expanded
