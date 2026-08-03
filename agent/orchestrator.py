@@ -306,10 +306,11 @@ class AtlasOrchestrator:
                             mcp={"status": "available", "transport": self.gateway.transport, "tool_count": len(tools)},
                         )
                     profile = await call("lookup_employee_profile", {"employee_id": employee_id})
+                    if not profile.get("ok"):
+                        return self._tool_error(profile, trace, tools, citations)
                     benefits = await call("lookup_benefits_status", {"employee_id": employee_id})
-                    for result in (profile, benefits):
-                        if not result.get("ok"):
-                            return self._tool_error(result, trace, tools, citations)
+                    if not benefits.get("ok"):
+                        return self._tool_error(benefits, trace, tools, citations)
                     employee = profile["data"]
                     record = benefits["data"]
                     answer = (
