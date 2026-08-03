@@ -12,6 +12,8 @@ Atlas is a deployed agentic HR assistant for the **Quantic AI Engineering Techni
 - API docs: https://atlas-hr-agent.onrender.com/docs
 - Tool registry: https://atlas-hr-agent.onrender.com/api/tools
 
+The public version `2.0.0` deployment, genuine MCP connection, two required workflows and prompt-injection guardrail were independently verified from GitHub Actions. See [`deployed.md`](deployed.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md).
+
 ## Score-5 features
 
 - 14-policy corpus in Markdown and HTML, about 10,000 words and 34.5 declared pages
@@ -28,6 +30,7 @@ Atlas is a deployed agentic HR assistant for the **Quantic AI Engineering Techni
 - groundedness, citation, tool, workflow, safety and latency metrics
 - retrieval chunk-size ablation
 - CI startup, tests, genuine MCP calls, deep health, evaluation and artifacts
+- reproducible public-deployment smoke test
 - Render deployment only after CI checks pass
 
 ## Demonstration prompts
@@ -116,11 +119,11 @@ docs/                architecture, compliance matrix and demo script
 
 ## Evaluation summary
 
-The checked-in 25-item deterministic run achieved 1.000 for groundedness, citation accuracy, tool-selection accuracy, workflow completion, clarification/escalation accuracy, action safety and status accuracy. Mean keyword coverage was 0.820. See [`evaluation/results.md`](evaluation/results.md). The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/ablation-results.md`](evaluation/ablation-results.md).
+The verified 25-item deterministic run achieved 1.000 for groundedness, citation accuracy, tool-selection accuracy, workflow completion, clarification/escalation accuracy, action safety and status accuracy. Mean keyword coverage was 0.820; warm p50/p95 latency was 2.73/4.69 ms. The balanced 120/20 chunk configuration achieved Hit@3 1.000 and MRR 0.950. See [`evaluation/results.md`](evaluation/results.md), [`evaluation/ablation-results.md`](evaluation/ablation-results.md) and [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md).
 
 ## Deployment
 
-`render.yaml` defines a free Python service and uses `autoDeployTrigger: checksPass`. Render deploys a new commit only after GitHub Actions succeeds. The first request after inactivity can take 50 seconds or more. The SQLite index is recreated under `/tmp` when a new instance starts.
+`render.yaml` defines a free Python service and uses `autoDeployTrigger: checksPass`. Render deploys a new commit only after GitHub Actions succeeds. The first request after inactivity can take 50 seconds or more. The SQLite index is recreated under `/tmp` when a new instance starts. `.github/workflows/live-smoke.yml` provides a repeatable public health and workflow check.
 
 ## Submission evidence
 
@@ -128,6 +131,7 @@ The checked-in 25-item deterministic run achieved 1.000 for groundedness, citati
 - [`design-and-evaluation.md`](design-and-evaluation.md)
 - [`ai-tooling.md`](ai-tooling.md)
 - [`deployed.md`](deployed.md)
+- [`SCORE5-VERIFICATION.md`](SCORE5-VERIFICATION.md)
 - [`docs/demo-script.md`](docs/demo-script.md)
 
-External steps still owned by the student: grant repository access to `quantic-grader` and record the 7–10 minute demonstration.
+Repository access for `quantic-grader` was verified as `read` on 3 August 2026. The only external submission step that cannot be completed within the repository is recording the required 7–10 minute screen-share demonstration.
