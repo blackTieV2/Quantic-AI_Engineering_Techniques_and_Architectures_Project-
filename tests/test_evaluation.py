@@ -8,19 +8,15 @@ from evaluation.run_evaluation import LATENCY_SAMPLE_IDS, run
 def test_golden_set_evaluation_thresholds() -> None:
     report = asyncio.run(run("inprocess"))
     summary = report["summary"]
-    failed_grounding = [
-        {
-            "id": item["id"],
-            "status": item["actual_status"],
-            "keyword_score": item["keyword_score"],
-            "citation_accuracy": item["citation_accuracy_pass"],
-            "citation_ids": item["citation_ids"],
-        }
-        for item in report["results"]
-        if not item["groundedness_pass"]
-    ]
+    failed_grounding = [item for item in report["results"] if not item["groundedness_pass"]]
+    for item in failed_grounding:
+        print(
+            "GROUNDING_REVIEW "
+            f"id={item['id']} status={item['actual_status']} "
+            f"keyword={item['keyword_score']} citation={item['citation_accuracy_pass']}"
+        )
     assert summary["items"] >= 20
-    assert summary["groundedness_proxy"] >= 0.9, failed_grounding
+    assert summary["groundedness_proxy"] >= 0.9, [item["id"] for item in failed_grounding]
     assert summary["citation_prefix_accuracy"] >= 0.9
     assert summary["exact_tool_sequence_accuracy"] >= 0.9
     assert summary["workflow_completion_rate"] >= 0.9
