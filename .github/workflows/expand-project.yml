@@ -1,4 +1,4 @@
-name: Diagnose committed project archive
+name: Recover Atlas project source
 
 on:
   push:
@@ -10,8 +10,12 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: recover-atlas-project-source
+  cancel-in-progress: false
+
 jobs:
-  diagnose:
+  recover:
     runs-on: ubuntu-latest
     steps:
       - name: Check out main
@@ -20,44 +24,49 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Test archive and record evidence
+      - name: Decode archive parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d .bootstrap
+          test -n "$(find .bootstrap -maxdepth 1 -name 'project.b64.*' -print -quit)"
+          cat .bootstrap/project.b64.* | base64 --decode > /tmp/project.tar.gz
+
+      - name: Recover tar payload despite damaged gzip trailer
         shell: bash
         run: |
           set +e
-          mkdir -p docs
-          REPORT=docs/bootstrap-diagnostic.txt
-          : > "$REPORT"
-          echo "Archive bootstrap diagnostic" >> "$REPORT"
-          echo "Commit: $GITHUB_SHA" >> "$REPORT"
-          echo "Runner: $RUNNER_OS" >> "$REPORT"
-          echo >> "$REPORT"
-          echo "Parts:" >> "$REPORT"
-          find .bootstrap -maxdepth 1 -name 'project.b64.*' -printf '%f %s bytes\n' | sort >> "$REPORT" 2>&1
-          echo >> "$REPORT"
-          echo "Decode test:" >> "$REPORT"
-          cat .bootstrap/project.b64.* | base64 --decode > /tmp/project.tar.gz 2>> "$REPORT"
-          DECODE_STATUS=$?
-          echo "decode_exit=$DECODE_STATUS" >> "$REPORT"
-          if [ "$DECODE_STATUS" -eq 0 ]; then
-            gzip -t /tmp/project.tar.gz 2>> "$REPORT"
-            GZIP_STATUS=$?
-            echo "gzip_exit=$GZIP_STATUS" >> "$REPORT"
-            if [ "$GZIP_STATUS" -eq 0 ]; then
-              tar -tzf /tmp/project.tar.gz > /tmp/project-files.txt 2>> "$REPORT"
-              TAR_STATUS=$?
-              echo "tar_list_exit=$TAR_STATUS" >> "$REPORT"
-              echo "archive_file_count=$(wc -l < /tmp/project-files.txt)" >> "$REPORT"
-              echo >> "$REPORT"
-              echo "First archive paths:" >> "$REPORT"
-              head -40 /tmp/project-files.txt >> "$REPORT"
-            fi
-          fi
+          gzip -dc /tmp/project.tar.gz > /tmp/project.tar
+          GZIP_STATUS=$?
+          echo "gzip_status=$GZIP_STATUS"
+          test -s /tmp/project.tar || exit 1
+          tar -tf /tmp/project.tar > /tmp/project-files.txt
+          TAR_STATUS=$?
+          echo "tar_status=$TAR_STATUS"
+          test "$TAR_STATUS" -eq 0 || exit 1
+          test -s /tmp/project-files.txt || exit 1
+          echo "Recovered $(wc -l < /tmp/project-files.txt) archive entries."
 
+      - name: Expand recovered project
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xf /tmp/project.tar -C . \
+            --exclude='.github/workflows' \
+            --exclude='.github/workflows/*'
+          rm -rf .bootstrap
+          rm -f docs/bootstrap-diagnostic.txt
+
+      - name: Commit recovered source
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$REPORT"
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: record archive expansion diagnostic"
-            git push origin HEAD:main
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
           fi
-          exit 0
+          git commit -m "feat: recover Atlas project source"
+          git push origin HEAD:main
