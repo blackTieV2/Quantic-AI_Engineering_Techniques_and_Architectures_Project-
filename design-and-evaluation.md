@@ -58,9 +58,11 @@ This design is free-tier safe and reproducible. It is also a strict-assignment r
 
 ### 2.7 LLM provider and current deployment status
 
-`agent/llm.py` contains an optional OpenAI-compatible refinement provider controlled by `ATLAS_LLM_BASE_URL`, `ATLAS_LLM_API_KEY` and `ATLAS_LLM_MODEL`. Temperature is fixed at zero. The provider is intended to refine an already grounded draft after tools and evidence have been selected; it cannot select tools or override guardrails.
+`agent/llm.py` contains an optional OpenAI-compatible refinement provider controlled by `ATLAS_LLM_BASE_URL`, `ATLAS_LLM_API_KEY` and `ATLAS_LLM_MODEL`. Temperature is fixed at zero. The provider refines an already controlled draft after tools and evidence have been selected; it cannot select tools or override guardrails.
 
-The current public Render health response reports deterministic mode because those variables are not configured. The course brief explicitly asks for a working LLM-based system. Therefore, the present deployment is technically functional but is not represented as fully satisfying that requirement until an active provider is configured and tested. The existing prompt also passes evidence snippets rather than the complete citation metadata object; metadata-rich prompt formatting should be added with the active provider.
+The grounding prompt supports citation metadata including document ID, title, section, source path, chunk ID and snippet. The remote-work workflow passes the complete citation objects into this refinement layer. Tests verify the metadata-rich prompt construction.
+
+The current public Render health response reports deterministic mode because the provider variables are not configured. The course brief explicitly asks for a working LLM-based system. Therefore, the present deployment is technically functional but is not represented as fully satisfying that requirement until an active provider is configured and tested. Broader use of the refinement layer across every response path is not required for tool control, but it could strengthen the demonstration of LLM-based answer synthesis.
 
 ## 3. Required agentic workflows
 
@@ -94,10 +96,11 @@ The first pass never invokes the write-like tool. After explicit confirmation, t
 
 - prompt-injection patterns are refused before MCP access;
 - sensitive conduct, legal and medical matters are escalated;
-- missing employee records return `not_found`;
+- missing employee records return `not_found` and stop downstream structured-data calls;
 - unsupported questions return `insufficient_evidence`;
 - MCP unavailability returns `mcp_unavailable` without hidden direct calls;
 - write-like tools reject unconfirmed requests;
+- ineligible PTO responses state the reason rather than returning only a balance;
 - all records and outputs are synthetic;
 - tool traces are shown instead of hidden chain-of-thought.
 
@@ -127,37 +130,41 @@ Render deploys the components as one free-tier Python service. The index and moc
 
 `evaluation/golden_set.json` contains 25 tasks covering direct policy questions, a multi-document policy question, remote-work and PTO workflows, structured benefits lookups, ambiguity, missing records, out-of-scope requests, prompt injection, sensitive-case escalation and confirmation-gated actions.
 
-Each item records the query, expected status, expected tools, allowed or required citation prefixes, gold answer keywords and confirmation state. These fields form a deterministic expected-answer rubric. Full prose gold answers are not currently stored for every item; adding them would make manual review easier.
+Each item records the query, expected status, expected tools, required citation prefixes, gold answer keywords and confirmation state. These fields form a deterministic expected-answer rubric. Full prose gold answers are not currently stored for every item; adding them would make manual review easier.
 
 ## 7. Metric methodology
 
-`evaluation/run_evaluation.py` reports status accuracy, expected-tool selection, citation-prefix accuracy, a groundedness proxy, workflow completion, clarification/escalation behavior, action safety, keyword coverage and warm p50/p95 latency.
+`evaluation/run_evaluation.py` reports status accuracy, exact expected-tool sequence, citation-family accuracy, a groundedness proxy, workflow completion, clarification/escalation behavior, action safety, keyword coverage and warm p50/p95 latency.
 
 The checked-in values are deterministic, rule-based proxy metrics. They are not an independent human review and are not an LLM-judge evaluation. In particular:
 
-- the groundedness proxy primarily checks that expected policy items have citations and supporting snippets;
-- citation accuracy checks document-family prefixes rather than sentence-level entailment;
-- the current multi-document prefix check does not independently prove that every required policy family was represented;
-- expected-tool checks currently verify inclusion rather than exact sequence for every item;
-- warm latency is measured in deterministic in-process evaluation and excludes Render wake-up time.
+- the groundedness proxy requires expected citation families, supporting snippets and at least 50% gold-keyword coverage for cited items;
+- citation accuracy rejects citations outside the allowed families and requires every expected family, including both families in the multi-document item;
+- tool accuracy requires the exact expected MCP call sequence;
+- the warm latency sample contains 15 designated representative tasks and excludes Render wake-up time.
 
 The public workflow smoke test separately verifies genuine stdio MCP behavior and the deployed workflows.
 
 ## 8. Checked-in evaluation results
 
+Source: GitHub Actions run `30798365389`, artifact `8849788261`.
+
 | Metric | Result |
 |---|---:|
 | Items | 25 |
 | Groundedness proxy | 1.000 |
-| Citation-prefix accuracy | 1.000 |
-| Expected-tool accuracy | 1.000 |
+| Citation-family accuracy | 1.000 |
+| Exact MCP tool-sequence accuracy | 1.000 |
 | Workflow-completion rate | 1.000 |
 | Clarification/escalation accuracy | 1.000 |
 | Action-safety pass rate | 1.000 |
 | Status accuracy | 1.000 |
-| Mean keyword score | 0.820 |
+| Mean keyword score | 0.940 |
+| Representative latency tasks | 15 |
+| Warm latency p50 | 2.72 ms |
+| Warm latency p95 | 4.59 ms |
 
-Warm latency varies by run. The exact current result is recorded in `evaluation/results.json` and the CI artifacts. Render cold-start behavior is documented separately in `deployed.md`.
+The complete summary and item results are recorded in `evaluation/results.json` and `evaluation/results.md`. Render cold-start behavior is documented separately in `deployed.md`.
 
 ## 9. Retrieval ablation
 
