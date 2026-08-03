@@ -1,22 +1,26 @@
 # Atlas Score-5 Verification Record
 
-Verified on 3 August 2026 through GitHub Actions pull-request run **30791401824**.
+Verified on 3 August 2026 through two independent GitHub Actions pull-request runs.
+
+- Packaged-source verification: run **30791401824**.
+- Fully expanded `main` source verification: run **30791902570**.
+
+The second run executed directly against the normal, human-readable repository tree now merged into `main`; no source-packaging step was required.
 
 ## Pipeline result
 
 The `validate` job completed successfully. Every stage passed:
 
 1. Checkout and Python 3.11 setup.
-2. SHA-256-verified complete source materialisation.
-3. Dependency installation.
-4. Compilation of `app`, `agent`, `rag`, `mcp_server`, `mcp_client`, `evaluation`, and `scripts`.
-5. Persistent SQLite RAG index build.
-6. Complete pytest suite.
-7. Genuine MCP stdio discovery and calls through the official Python MCP client.
-8. FastAPI startup and deep `/health?deep=true` check.
-9. Twenty-five-item golden-set evaluation.
-10. Retrieval chunk-size ablation.
-11. Upload of the `atlas-score-5-evidence` artifact.
+2. Dependency installation.
+3. Compilation of `app`, `agent`, `rag`, `mcp_server`, `mcp_client`, `evaluation`, and `scripts`.
+4. Persistent SQLite RAG index build.
+5. Complete pytest suite.
+6. Genuine MCP stdio discovery and calls through the official Python MCP client.
+7. FastAPI startup and deep `/health?deep=true` check.
+8. Twenty-five-item golden-set evaluation.
+9. Retrieval chunk-size ablation.
+10. Upload of the `atlas-score-5-evidence` artifact.
 
 ## MCP protocol evidence
 
@@ -45,7 +49,16 @@ The protocol smoke test successfully called a policy-search tool and a structure
     "status": "available",
     "transport": "stdio",
     "server": "Atlas HR Tools",
-    "tool_count": 8
+    "tools": [
+      "check_policy_compliance",
+      "check_pto_balance",
+      "create_mock_hr_ticket",
+      "draft_hr_email",
+      "get_policy_section",
+      "lookup_benefits_status",
+      "lookup_employee_profile",
+      "search_policy_documents"
+    ]
   },
   "rag_index": {
     "status": "ready",
@@ -56,6 +69,7 @@ The protocol smoke test successfully called a policy-search tool and a structure
     "chunk_words": 120,
     "overlap_words": 20
   },
+  "llm_provider": "deterministic",
   "synthetic_data_only": true
 }
 ```
@@ -71,8 +85,8 @@ The protocol smoke test successfully called a policy-search tool and a structure
 - Action-safety pass rate: **1.000**
 - Status accuracy: **1.000**
 - Mean keyword coverage: **0.820**
-- Warm latency p50: **2.69 ms**
-- Warm latency p95: **4.75 ms**
+- Warm latency p50: **2.73 ms**
+- Warm latency p95: **4.69 ms**
 
 ## Retrieval ablation
 
@@ -84,9 +98,20 @@ The protocol smoke test successfully called a policy-search tool and a structure
 
 The balanced configuration remains the selected default because it achieved the best MRR while using fewer chunks than the compact alternative.
 
-## Evidence artifact
+## Evidence artifacts
+
+### Fully expanded source
 
 - Name: `atlas-score-5-evidence`
+- Workflow run: `30791902570`
+- Artifact ID: `8847359957`
+- Digest: `sha256:4570cd84ff1009ad0ab1fe61e9d8d7c073a3b89a0e69c24d1f09ea047c87978f`
+- Verification PR: #4, closed without merge after successful validation.
+
+### Packaged source
+
+- Name: `atlas-score-5-evidence`
+- Workflow run: `30791401824`
 - Artifact ID: `8847177885`
 - Digest: `sha256:ec0654d565feff211818ce26c124d7f2c654bd683c1793f49b6b1028c842a28c`
-- Source verification PR: #2 (closed without merge after successful verification)
+- Verification PR: #2, closed without merge after successful validation.
