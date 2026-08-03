@@ -1,27 +1,27 @@
-# Atlas Score-5 Verification Record
+# Atlas Technical Verification Record — Score-5 Target
 
-Verified on 3 August 2026 through three independent GitHub Actions runs.
+This file records technical test evidence. It does **not** certify a Quantic grade or claim that every assignment requirement is complete. The strict requirement assessment is in `ASSIGNMENT-COMPLIANCE-AUDIT.md`.
 
-- Packaged-source verification: run **30791401824**.
-- Fully expanded `main` source verification: run **30791902570**.
-- Public Render v2 deployment verification: run **30792651006**.
+## Current assignment-alignment run
 
-The expanded-source run executed directly against the normal, human-readable repository tree now merged into `main`; no source-packaging step was required. The deployed-service run exercised the public Render URL from a GitHub-hosted runner.
+GitHub Actions run **30798365389** executed against pull request #6 and completed successfully. The run included:
 
-## Pipeline result
+1. Python 3.11 setup and dependency installation.
+2. Compilation of `app`, `agent`, `rag`, `mcp_server`, `mcp_client`, `evaluation`, and `scripts`.
+3. Persistent SQLite RAG index build.
+4. Complete pytest suite.
+5. Genuine MCP stdio discovery and calls through the official Python MCP client.
+6. FastAPI startup and deep `/health?deep=true` check.
+7. Strengthened twenty-five-item rubric evaluation.
+8. Retrieval chunk-size ablation.
+9. Evidence artifact upload.
 
-The `validate` job completed successfully. Every stage passed:
+Evidence artifact:
 
-1. Checkout and Python 3.11 setup.
-2. Dependency installation.
-3. Compilation of `app`, `agent`, `rag`, `mcp_server`, `mcp_client`, `evaluation`, and `scripts`.
-4. Persistent SQLite RAG index build.
-5. Complete pytest suite.
-6. Genuine MCP stdio discovery and calls through the official Python MCP client.
-7. FastAPI startup and deep `/health?deep=true` check.
-8. Twenty-five-item golden-set evaluation.
-9. Retrieval chunk-size ablation.
-10. Upload of the `atlas-score-5-evidence` artifact.
+- Name: `atlas-score-5-evidence`
+- Workflow run: `30798365389`
+- Artifact ID: `8849788261`
+- Digest: `sha256:d88caf542730f03d35ebb43709256aba36f43af2f2a3baac898edb69a903248e`
 
 ## MCP protocol evidence
 
@@ -36,7 +36,7 @@ The CI client launched **Atlas HR Tools** over stdio and discovered eight MCP to
 - `lookup_employee_profile`
 - `search_policy_documents`
 
-The protocol smoke test successfully called a policy-search tool and a structured employee-data tool.
+The protocol smoke test called a policy-search tool and a structured employee-data tool. The application refuses to bypass an unavailable MCP service with hidden direct calls.
 
 ## Deep-health evidence
 
@@ -50,16 +50,7 @@ The protocol smoke test successfully called a policy-search tool and a structure
     "status": "available",
     "transport": "stdio",
     "server": "Atlas HR Tools",
-    "tools": [
-      "check_policy_compliance",
-      "check_pto_balance",
-      "create_mock_hr_ticket",
-      "draft_hr_email",
-      "get_policy_section",
-      "lookup_benefits_status",
-      "lookup_employee_profile",
-      "search_policy_documents"
-    ]
+    "tool_count": 8
   },
   "rag_index": {
     "status": "ready",
@@ -75,31 +66,26 @@ The protocol smoke test successfully called a policy-search tool and a structure
 }
 ```
 
-## Public deployment verification
+The `llm_provider` field is important: the public release currently uses deterministic synthesis unless an OpenAI-compatible provider is configured. The assignment audit treats active LLM use as an unresolved strict-compliance risk.
 
-The live smoke test called `https://atlas-hr-agent.onrender.com` and proved:
+## Strengthened evaluation results
 
-- public deep health returned version `2.0.0`, mode `agentic-rag-mcp`, MCP `available`, transport `stdio`, eight discovered tools, and a ready 14-document/126-chunk RAG index;
-- remote-work eligibility completed with the exact tool sequence `search_policy_documents` → `lookup_employee_profile` → `check_policy_compliance` and only `POL-RW-*` citations;
-- the PTO request stopped at `confirmation_required` without calling `draft_hr_email`;
-- explicit confirmation completed the mock email action with `sent: false` and a no-send disclaimer;
-- the prompt-injection test was refused before MCP access.
+| Metric | Result |
+|---|---:|
+| Items | 25 |
+| Groundedness proxy | 1.000 |
+| Citation-family accuracy | 1.000 |
+| Exact MCP tool-sequence accuracy | 1.000 |
+| Workflow completion | 1.000 |
+| Clarification/escalation accuracy | 1.000 |
+| Action-safety pass rate | 1.000 |
+| Status accuracy | 1.000 |
+| Mean keyword coverage | 0.940 |
+| Representative warm-latency sample | 15 tasks |
+| Warm latency p50 | 2.72 ms |
+| Warm latency p95 | 4.59 ms |
 
-The check tolerates documented Render free-tier cold starts and transient `429`, `502`, `503`, or `504` responses, but it does not accept an incorrect release, unavailable MCP server, wrong tool sequence, unsafe action, or irrelevant citations.
-
-## Golden-set results
-
-- Items: 25
-- Groundedness: **1.000**
-- Citation accuracy: **1.000**
-- Tool-selection accuracy: **1.000**
-- Workflow completion: **1.000**
-- Clarification/escalation accuracy: **1.000**
-- Action-safety pass rate: **1.000**
-- Status accuracy: **1.000**
-- Mean keyword coverage: **0.820**
-- Warm latency p50: **2.73 ms**
-- Warm latency p95: **4.69 ms**
+These are deterministic rubric-based proxy metrics. Groundedness is not an independent semantic-entailment judgment. Citation accuracy requires every expected policy family, and tool accuracy requires the exact expected MCP call sequence.
 
 ## Retrieval ablation
 
@@ -109,30 +95,30 @@ The check tolerates documented Render free-tier cold starts and transient `429`,
 | Balanced | 120 / 20 | 1.000 | 1.000 | 0.950 |
 | Broad | 220 / 30 | 1.000 | 1.000 | 0.950 |
 
-The balanced configuration remains the selected default because it achieved the best MRR while using fewer chunks than the compact alternative.
+The balanced configuration remains the selected default because it matches the best MRR while using fewer chunks than the compact alternative and smaller evidence units than the broad alternative.
 
-## Evidence artifacts
+## Public deployment evidence
 
-### Public Render v2 deployment
+The earlier public Render smoke run **30792651006** proved:
+
+- version `2.0.0`, mode `agentic-rag-mcp`, MCP `available`, stdio transport and eight tools;
+- a ready 14-document/126-chunk index;
+- the remote-work workflow and `POL-RW-*` citation restriction;
+- the PTO confirmation gate and confirmed mock email with `sent: false`;
+- prompt-injection refusal before MCP access.
+
+Public-deployment artifact:
 
 - Name: `atlas-deployed-v2-evidence`
-- Workflow run: `30792651006`
 - Artifact ID: `8847626586`
 - Digest: `sha256:0d386d80c9a052a666a467a60c62aae584969e6b7a2f51f0529082ba46b04b55`
-- Verification PR: #5, closed without merge after successful validation.
 
-### Fully expanded source
+## Remaining non-verified requirements
 
-- Name: `atlas-score-5-evidence`
-- Workflow run: `30791902570`
-- Artifact ID: `8847359957`
-- Digest: `sha256:4570cd84ff1009ad0ab1fe61e9d8d7c073a3b89a0e69c24d1f09ea047c87978f`
-- Verification PR: #4, closed without merge after successful validation.
+Technical CI does not complete or prove:
 
-### Packaged source
-
-- Name: `atlas-score-5-evidence`
-- Workflow run: `30791401824`
-- Artifact ID: `8847177885`
-- Digest: `sha256:ec0654d565feff211818ce26c124d7f2c654bd683c1793f49b6b1028c842a28c`
-- Verification PR: #2, closed without merge after successful validation.
+- active LLM configuration in the public deployment;
+- whether the hashing TF-IDF representation satisfies the grader's interpretation of “embedding model”;
+- explicit acceptance of the `quantic-grader` collaborator invitation;
+- the required 7–10 minute presentation, camera presence and government-ID check;
+- the final Quantic grading decision.
