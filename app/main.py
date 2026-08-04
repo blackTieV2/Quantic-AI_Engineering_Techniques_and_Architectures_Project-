@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -8,6 +7,12 @@ from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
+from agent.llm import (
+    get_provider,
+    get_refinement_status,
+    provider_status,
+    reset_refinement_status,
+)
 from agent.orchestrator import AtlasOrchestrator
 from mcp_client.client import MCPGateway, MCPGatewayError
 from rag.index import get_index
@@ -26,8 +31,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Atlas HR Agent",
-    version="2.0.0",
-    description="A synthetic agentic HR assistant with persistent policy RAG and genuine MCP tool calls.",
+    version="2.1.0",
+    description="A synthetic agentic HR assistant with persistent policy RAG, genuine MCP tool calls and constrained LLM refinement.",
     lifespan=lifespan,
 )
 
@@ -63,10 +68,10 @@ async def health(deep: bool = Query(False)) -> dict[str, Any]:
         "status": "ok" if index_status.get("status") == "ready" else "degraded",
         "service": "atlas-hr-agent",
         "version": app.version,
-        "mode": "agentic-rag-mcp",
+        "mode": "agentic-rag-mcp-llm",
         "mcp": mcp_status,
         "rag_index": index_status,
-        "llm_provider": "openai-compatible" if os.getenv("ATLAS_LLM_API_KEY") else "deterministic",
+        "llm_provider": provider_status(),
         "synthetic_data_only": True,
     }
 
@@ -82,8 +87,40 @@ async def tools() -> dict[str, Any]:
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> dict[str, Any]:
+    reset_refinement_status()
     orchestrator = AtlasOrchestrator()
-    return (await orchestrator.handle(request.message, request.confirm_action)).as_dict()
+    result = await orchestrator.handle(request.message, request.confirm_action)
+
+    provider = get_provider()
+    refinement = get_refinement_status()
+    refinable_statuses = {
+        "completed",
+        "provisionally_eligible",
+        "not_eligible",
+        "mock_action_completed",
+        "escalated",
+    }
+    if (
+        provider.configured
+        and result.citations
+        and result.status in refinable_statuses
+        and refinement.get("status") == "not_called"
+    ):
+        result.answer = await provider.refine(result.answer, result.citations)
+        refinement = get_refinement_status()
+
+    if provider.configured and refinement.get("status") in {
+        "completed",
+        "fallback_to_controlled_draft",
+    }:
+        trace_entry = {
+            "step": len(result.trace) + 1,
+            "event": "llm_refinement",
+            **refinement,
+        }
+        result.trace.append(trace_entry)
+
+    return result.as_dict()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -122,9 +159,9 @@ def home() -> str:
 <body>
 <main>
   <section class="hero">
-    <span class="badge">Quantic AI Engineering Project · MCP + Persistent RAG</span>
+    <span class="badge">Quantic AI Engineering Project · MCP + Persistent RAG + LLM</span>
     <h1>Atlas HR Agent</h1>
-    <p class="subtitle">A fictional HR assistant that discovers and calls MCP tools, retrieves policy evidence from a persistent SQLite vector index, cites sources, and requires confirmation before mock actions.</p>
+    <p class="subtitle">A fictional HR assistant that discovers and calls MCP tools, retrieves policy evidence from a persistent SQLite vector index, cites sources, and uses a constrained LLM to refine grounded answers while deterministic controls retain authority.</p>
   </section>
   <section class="panel">
     <strong>Ask Atlas</strong>
@@ -144,10 +181,10 @@ def home() -> str:
       <div id="answer" class="answer"></div>
       <div id="meta" class="meta"></div>
       <div id="citations"></div>
-      <details><summary>Tool-call trace</summary><div id="trace"></div></details>
+      <details><summary>Tool-call and LLM trace</summary><div id="trace"></div></details>
     </div>
   </section>
-  <div class="footer">All people, records, policies and actions are fictional. Mock email and ticket tools never contact a production system.</div>
+  <div class="footer">All people, records, policies and actions are fictional. Mock email and ticket tools never contact a production system. AI-refined answers may contain errors; cited policy evidence remains authoritative for this demonstration.</div>
 </main>
 <script>
   const message = document.getElementById('message');
