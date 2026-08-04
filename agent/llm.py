@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextvars
 import os
 import re
 from typing import Any, Protocol
@@ -12,9 +13,14 @@ from rag.index import get_index
 
 EvidenceItem = dict[str, Any] | str
 
+_REFINEMENT_STATUS: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar(
+    "atlas_llm_refinement_status",
+    default={"status": "not_called"},
+)
+
 
 class LLMProviderError(RuntimeError):
-    """Raised when the configured refinement provider cannot return a safe answer."""
+    """Raised internally when the configured refinement provider cannot return a safe answer."""
 
 
 class AnswerProvider(Protocol):
@@ -23,6 +29,18 @@ class AnswerProvider(Protocol):
     model: str | None
 
     async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str: ...
+
+
+def reset_refinement_status() -> None:
+    _REFINEMENT_STATUS.set({"status": "not_called"})
+
+
+def get_refinement_status() -> dict[str, Any]:
+    return dict(_REFINEMENT_STATUS.get())
+
+
+def _set_refinement_status(**payload: Any) -> None:
+    _REFINEMENT_STATUS.set(payload)
 
 
 def _enrich_legacy_snippet(snippet: str) -> EvidenceItem:
@@ -85,11 +103,12 @@ class DeterministicProvider:
     model: str | None = None
 
     async def refine(self, draft: str, evidence: list[EvidenceItem]) -> str:
+        _set_refinement_status(status="not_configured", provider=self.provider_type, model=None)
         return draft
 
 
 class OpenAICompatibleProvider:
-    """Constrained OpenAI-compatible answer refinement with bounded retries."""
+    """Constrained OpenAI-compatible answer refinement with bounded retries and safe fallback."""
 
     configured = True
     provider_type = "openai-compatible"
@@ -140,15 +159,31 @@ class OpenAICompatibleProvider:
                 content = payload.get("choices", [{}])[0].get("message", {}).get("content")
                 if not isinstance(content, str) or not content.strip():
                     raise LLMProviderError("Provider returned an empty or malformed answer")
-                return content.strip()
-            except LLMProviderError:
-                raise
+                revised = content.strip()
+                _set_refinement_status(
+                    status="completed",
+                    provider=self.provider_type,
+                    model=self.model,
+                    evidence_items=len(evidence),
+                    attempts=attempt + 1,
+                )
+                return revised
+            except LLMProviderError as exc:
+                last_error = exc
+                break
             except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
                 last_error = exc
                 if attempt >= self.max_retries:
                     break
                 await asyncio.sleep(min(2**attempt, 4))
-        raise LLMProviderError(f"Provider request failed after retries: {last_error}")
+        _set_refinement_status(
+            status="fallback_to_controlled_draft",
+            provider=self.provider_type,
+            model=self.model,
+            evidence_items=len(evidence),
+            error=str(last_error),
+        )
+        return draft
 
 
 def get_provider() -> AnswerProvider:
@@ -173,5 +208,5 @@ def provider_status() -> dict[str, Any]:
         "type": provider.provider_type,
         "model": provider.model,
         "endpoint_host": urlparse(base_url).netloc,
-        "verification": "A successful cited remote-work response proves a completed provider call.",
+        "verification": "A successful cited chat response records llm_refinement=completed.",
     }
