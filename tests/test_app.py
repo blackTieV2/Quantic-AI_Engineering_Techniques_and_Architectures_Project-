@@ -3,6 +3,9 @@ from __future__ import annotations
 import os
 
 os.environ["ATLAS_MCP_TRANSPORT"] = "inprocess"
+os.environ.pop("ATLAS_LLM_BASE_URL", None)
+os.environ.pop("ATLAS_LLM_API_KEY", None)
+os.environ.pop("ATLAS_LLM_MODEL", None)
 
 from fastapi.testclient import TestClient
 from app.main import app
@@ -18,9 +21,11 @@ with TestClient(app) as client:
         assert response.status_code == 200
         payload = response.json()
         assert payload["status"] == "ok"
-        assert payload["version"] == "2.0.0"
+        assert payload["version"] == "2.1.0"
+        assert payload["mode"] == "agentic-rag-mcp-llm"
         assert payload["mcp"]["status"] == "available"
         assert payload["rag_index"]["documents"] == 14
+        assert payload["llm_provider"]["status"] == "deterministic"
 
     def test_remote_work_uses_mcp_tools() -> None:
         payload = client.post("/chat", json={"message": "Can E1001 work remotely overseas for 10 days?"}).json()
@@ -29,6 +34,7 @@ with TestClient(app) as client:
         assert payload["citations"]
         assert all(item["document_id"].startswith("POL-RW-") for item in payload["citations"])
         assert payload["trace"][0]["event"] == "discover_tools"
+        assert not any(item.get("event") == "llm_refinement" for item in payload["trace"])
 
     def test_pto_confirmation_and_mock_action() -> None:
         question = "How much PTO does E1001 have and draft an email for 5 days?"
